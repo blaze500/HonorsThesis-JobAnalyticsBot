@@ -1,0 +1,5 @@
+self.type =       job         internship
+self.inPerson =   in person   remote       both
+self.fullTime =   full time   part time    both
+self.education =  associate   bachelor     masters
+self.experience = entry       mid          senior
