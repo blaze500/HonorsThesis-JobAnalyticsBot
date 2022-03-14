@@ -1,21 +1,11 @@
-import pandas as pd
-import requests
-import bs4
 import requests
 from bs4 import BeautifulSoup
-from bs4.element import Comment
-import datetime
-import random
 import time
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-import re
-from pandas import DataFrame
-from urllib.parse import urlparse
-import datetime
-import re
+import os
 
 
 class JobFinder:
@@ -272,21 +262,25 @@ class GoogleCareerJobs:
 
         return self.seleniumDriver.find_elements(By.TAG_NAME, "a")
 
-
     def findLinks(self):
         link = self.googleJobsLink
         page = 1
-        while link != "":
+        if not os.path.exists(self.writeTo + '.csv'):
+            open(self.writeTo + '.csv', 'x')
+        while True:
             a_tags = self.linkToHTML(link)
             print("current link: " + link)
             #print(urlHTML)
             if a_tags is not None:
-                link = self.linkAlgorithm(a_tags, link, page)
+                keepGoing = self.linkAlgorithm(a_tags)
+                if keepGoing == False:
+                    break
                 page += 1
+                link = self.googleJobsLink + "&page=" + str(page)
                 print("nextLink= " + link)
             else:
                 print("Did not find what you are looking for!")
-                break;
+                break
         self.seleniumDriver.quit()
         print("Task Ended Sucessfully")
 
@@ -305,33 +299,20 @@ class GoogleCareerJobs:
 
         return False
 
-    def linkConditions(self, url, link, page):
+    def linkConditions(self, url):
         if "/jobs/results/" in url and "/jobs/results/?" not in url:
-            return True
-        elif "/jobs/results/?" in url and "page="+str(page+1) in url:
             return True
         return False
 
-    def linkAlgorithm(self, a_tags, link, page):
-        nextLink=""
-        for a_tag in a_tags:
-            url=a_tag.get_attribute("href")
-            #print(url)
-            #
-            if self.isProperLink(url):
-                #
-                if self.linkConditions(url, link, page):
-                    # checks to see if that is the link to the next page
-                    if "page="+str(page+1) in url:
-                        print(url)
-                        nextLink=url
-                    # if its not, write it to a csv
-                    else:
-                        #print(url)
-                        #Because I am not looking for new links, I will
-                        if url not in open(self.writeTo + '.csv', encoding="utf-8").read():
-                            self.writeToCSV(url)
-        return nextLink
+    def linkAlgorithm(self, a_tags):
+        urlCleaning=[a_tag.get_attribute("href") for a_tag in a_tags if self.isProperLink(a_tag.get_attribute("href"))]
+        urls=[url for url in urlCleaning if self.linkConditions(url)]
+        if len(urls) > 0:
+            for url in urls:
+                if url not in open(self.writeTo + '.csv', encoding="utf-8").read():
+                    self.writeToCSV(url)
+            return True
+        return False
 
     def writeToCSV(self, finalURL):
         csv = open(self.writeTo + '.csv', 'a', encoding="utf-8")
