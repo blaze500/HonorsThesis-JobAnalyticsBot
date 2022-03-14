@@ -47,6 +47,7 @@ class JobFinder:
         print(self.education)
         print(self.experience)
         print(self.writeTo)
+        #createFile()
         googleJobs = GoogleCareerJobs(self.type, self.field, self.inPerson, self.fullTime, self.salary, self.location, self.education, self.experience, self.writeTo)
         googleJobs.googleJobsLinkMaker()
         googleJobs.findLinks()
