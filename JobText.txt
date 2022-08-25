@@ -1,9 +1,9 @@
 job
 computer science
-
+both
 full time
-50000
-florida
-
+0
+Jacksonville,Florida
+bachelor
 entry
 test
