@@ -9,6 +9,55 @@ import os
 import csv
 import LocationChecker
 
+class GoogleJobs:
+
+    def __init__(self, type, field, inPerson, fullTime, salary, location, education, experience, writeTo):
+        self.type = type
+        self.field = field
+        self.inPerson = inPerson
+        self.fullTime = fullTime
+        self.salary = salary
+        self.location = location
+        self.education = education
+        self.experience = experience
+        self.writeTo = writeTo
+
+    def googleLinkMaker(self):
+
+        fullTime =self.fullTime.replace(" ", "+") + "+"
+
+        expereince = self.experience
+        if self.experience != "":
+            expereince += "+level+"
+
+        inPerson = self.inPerson.replace(" ", "+")
+        if self.inPerson != "":
+            inPerson += "+"
+
+        linkField = self.field.replace(" ", "+") + "+"
+        type = self.type.replace(" ", "+") + "+"
+        location = self.location.replace(" ", "+")
+
+        self.googleLink = "https://www.google.com/search?q=" + fullTime + expereince + inPerson + linkField + type + location
+        print(self.googleLink)
+
+    def linkToHTML(self,link):
+        #Gets URL, add .content to turn it into something readable
+        url = requests.get(link.strip())
+        print(url.content)
+        #Turns Page into HTML
+        urlHTML = BeautifulSoup(url.content, 'html.parser')
+        return urlHTML
+
+    def findLinks(self):
+        page=1
+        link=self.googleLink
+        while link != "":
+
+            # A link page _ in a tag
+            page+=1
+            link=""
+
 
 class GoogleCareerJobs:
 
@@ -24,20 +73,6 @@ class GoogleCareerJobs:
         self.writeTo = writeTo
         self.seleniumDriver = seleniumDriver
 
-
-
-
-
-
-
-
-
-
-    # Makes the link based off of search filters in the search engine. This is done by figuring
-    # out what filter (for example, salary, degree type, job type) is correlated to in the link
-    # when you click on a filter. By doing this instead of say, clicking on each filter with a
-    # selenium bot, it saves a lot of time and is more or less prone to the same errors a selenium
-    # bot that clicks on the websites filters is (things moving, words changing, ect.).
     def googleJobsLinkMaker(self):
 
         self.googleJobsLink = "https://careers.google.com/jobs/results/"
@@ -62,11 +97,9 @@ class GoogleCareerJobs:
         if self.inPerson != "in person":
             self.googleJobsLink +="&has_remote=true"
 
-        # Replaces spaces with its character number and then hexadecimal equivalent, as web links cannot function with a in them.
         if len(self.location) > 0:
             self.googleJobsLink +="&location=" + self.location.replace(" ", "%20")
 
-        # Replaces spaces with its character number and then hexadecimal equivalent, as web links cannot function with a in them.
         if self.field != "":
             self.googleJobsLink +="&q=" + self.field.replace(" ", "%20")
 
@@ -75,20 +108,11 @@ class GoogleCareerJobs:
 
         print(self.googleJobsLink)
 
-
-
-
-
-
-
-
-
-    # Takes the link, turns it into something the Selenium driver can read
-    # And waits for the page to load with the jobs
     def linkToHTML(self, link):
         #Gets URL, add .content to turn it into something readable
         self.seleniumDriver.get(link.strip())
-        time.sleep(1.5)
+
+        time.sleep(2)
         try:
             WebDriverWait(self.seleniumDriver, 10).until(
                 EC.presence_of_element_located((By.TAG_NAME, "li"))
@@ -100,49 +124,32 @@ class GoogleCareerJobs:
 
         return self.seleniumDriver.find_elements(By.TAG_NAME, "a")
 
-
-
-
-
-
-
-
-
-
-    # The skeleton of the search algorithm for gathering each webpage that contains
-    # job links.
     def findLinks(self):
-        link = self.googleJobsLink
+        currentLink = ""
+        for element in self.linkToHTML(self.googleJobsLink):
+            startingLink = element.get_attribute("href")
+            if self.isProperLink(startingLink) and self.linkConditions(startingLink):
+                currentLink=startingLink
+                break
         page = 1
-        # Makes a CSV if one doesnt exist, as the job links will be stored in a CSV
         if not os.path.exists(self.writeTo + '.csv'):
             open(self.writeTo + '.csv', 'x')
         while True:
-            # Grabs a webpages a tags (an HTML DOM element which holds web links)
-            a_tags = self.linkToHTML(link)
-            print("current link: " + link)
+            page += 1
+            a_tags = self.linkToHTML(currentLink)
+            print("current link: " + currentLink)
+            #print(urlHTML)
             if a_tags is not None:
-                #Gathers the job postings on a page or stops the algorithm when there are none
-                keepGoing = self.linkAlgorithm(a_tags)
-                if keepGoing == False:
+                nextLink = self.linkAlgorithm(a_tags, page, currentLink)
+                if nextLink == False:
                     break
-                page += 1
-                #Goes to the next page of job listings on the job search engine.
-                link = self.googleJobsLink + "&page=" + str(page)
-                print("nextLink= " + link)
+                currentLink = nextLink
             else:
                 print("Did not find what you are looking for!")
                 break
         #self.seleniumDriver.quit()
         print("Task Ended Sucessfully")
 
-
-
-
-
-
-
-    # Checks to see if the link is not downloadable as we are not downloading anything
     def isProperLink(self, url):
         # Checks if the href is actually a word
         if url is not None:
@@ -158,41 +165,31 @@ class GoogleCareerJobs:
 
         return False
 
-
-
-
-
-    # Checking conditions for link in order to get the links that have job.
-    # Typically each job search will have their own thing in each link to
-    # differentiate a job from some other link.
     def linkConditions(self, url):
         if "/jobs/results/" in url and "/jobs/results/?" not in url:
             return True
         return False
 
-
-
-
-
-    # Generic algorithm which takes all the links from the webpage/selenium objects and
-    # filters them so that only the jobs remain and then writes them to a csv file.
-    def linkAlgorithm(self, a_tags):
-        #Gets all of the links that are not a downlodable one
-        urlCleaning=[a_tag.get_attribute("href") for a_tag in a_tags if self.isProperLink(a_tag.get_attribute("href"))]
-        # Gets all of the links that are job postings
-        urls=[url for url in urlCleaning if self.linkConditions(url)]
-        if len(urls) > 0:
-            for url in urls:
-                if url not in open(self.writeTo + '.csv', encoding="utf-8").read():
-                    self.writeToCSV(url)
-            return True
+    def linkAlgorithm(self, a_tags, page, currentLink):
+        nextPage=""
+        jobs=[]
+        for element in a_tags:
+            link = element.get_attribute("href")
+            if self.isProperLink(link):
+                if "page=" + str(page) in link:
+                    nextPage=link
+                elif self.linkConditions(link) and link is not currentLink and "page=" + str(page) not in link:
+                    jobs.append(element)
+        print(len(jobs))
+        if len(jobs)-2 > 0:
+            for job in jobs:
+                print("last called:" + job.get_attribute("href"))
+                self.seleniumDriver.execute_script("arguments[0].click();", job)
+                time.sleep(3)
+            return nextPage
+        print("task ended sucessfully")
         return False
 
-
-
-
-
-    # Generic CSV writter, which takes URLS (or any string for that matter) and places them in a CSV.
     def writeToCSV(self, finalURL):
         csv = open(self.writeTo + '.csv', 'a', encoding="utf-8")
         csv.write(finalURL + "\n")

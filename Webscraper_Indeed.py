@@ -23,13 +23,31 @@ class IndeedJobs:
         self.writeTo = writeTo
         self.seleniumDriver = seleniumDriver
 
+
+
+
+
+
+
+
+
+
+    # Makes the link based off of search filters in the search engine. This is done by figuring
+    # out what filter (for example, salary, degree type, job type) is correlated to in the link
+    # when you click on a filter. By doing this instead of say, clicking on each filter with a
+    # selenium bot, it saves a lot of time and is more or less prone to the same errors a selenium
+    # bot that clicks on the websites filters is (things moving, words changing, ect.).
     def indeedJobsLinkMaker(self):
 
         self.indeedJobsLink = "https://www.indeed.com/jobs?"
 
+        # Turns spaces into +, as weblinks cannot function with spaces in them. Normally however, this
+        # is done by turning the space into its character number and then hexadecimal equivalent.
         if self.field != "":
             self.indeedJobsLink +="&q=" + self.field.replace(" ", "+")
 
+        # Turns spaces into +, as weblinks cannot function with spaces in them. Normally however, this
+        # is done by turning the space into its character number and then hexadecimal equivalent.
         if len(self.location) > 0:
             self.indeedJobsLink +="&l=" + self.location.replace(" ", "+")
 
@@ -66,10 +84,20 @@ class IndeedJobs:
         self.indeedJobsLink += "%3B"
         print(self.indeedJobsLink)
 
+
+
+
+
+
+
+
+
+    # Takes the link, turns it into something the Selenium driver can read
+    # And waits for the page to load with the jobs
     def linkToHTML(self, link):
         #Gets URL, add .content to turn it into something readable
         self.seleniumDriver.get(link.strip())
-        time.sleep(2)
+        time.sleep(1.5)
         try:
             WebDriverWait(self.seleniumDriver, 10).until(
                 EC.presence_of_element_located((By.TAG_NAME, "li"))
@@ -81,20 +109,35 @@ class IndeedJobs:
 
         return self.seleniumDriver.find_elements(By.TAG_NAME, "a")
 
+
+
+
+
+
+
+
+
+
+    # The skeleton of the search algorithm for gathering each webpage that contains
+    # job links.
     def findLinks(self):
         link = self.indeedJobsLink
         page = 1
+        # Makes a CSV if one doesnt exist, as the job links will be stored in a CSV
         if not os.path.exists(self.writeTo + '.csv'):
             open(self.writeTo + '.csv', 'x')
         while True:
+            # Grabs a webpages a tags (an HTML DOM element which holds web links)
             a_tags = self.linkToHTML(link)
             print("current link: " + link)
             #print(urlHTML)
             if a_tags is not None:
+                # Gathers the job postings on a page or stops the algorithm when there are none
                 keepGoing = self.linkAlgorithm(a_tags)
                 if keepGoing == False:
                     break
                 page += 1
+                #Goes to the next page of job listings on the job search engine.
                 link = self.indeedJobsLink + "&start=" + str((page-1)*10)
                 print("nextLink= " + link)
             else:
@@ -103,6 +146,13 @@ class IndeedJobs:
         #self.seleniumDriver.quit()
         print("Task Ended Sucessfully")
 
+
+
+
+
+
+
+    # Checks to see if the link is not downloadable as we are not downloading anything
     def isProperLink(self, url):
         # Checks if the href is actually a word
         if url is not None:
@@ -118,13 +168,28 @@ class IndeedJobs:
 
         return False
 
+
+
+
+
+    # Checking conditions for link in order to get the links that have job.
+    # Typically each job search will have their own thing in each link to
+    # differentiate a job from some other link.
     def linkConditions(self, url):
         if "/rc/clk?jk=" in url:
             return True
         return False
 
+
+
+
+
+    # Generic algorithm which takes all the links from the webpage/selenium objects and
+    # filters them so that only the jobs remain and then writes them to a csv file.
     def linkAlgorithm(self, a_tags):
+        #Gets all of the links that are not a downlodable one
         urlCleaning=[a_tag.get_attribute("href") for a_tag in a_tags if self.isProperLink(a_tag.get_attribute("href"))]
+        # Gets all of the links that are job postings
         urls=[url for url in urlCleaning if self.linkConditions(url)]
         if len(urls) > 0:
             for url in urls:
@@ -133,6 +198,11 @@ class IndeedJobs:
             return True
         return False
 
+
+
+
+
+    # Generic CSV writter, which takes URLS (or any string for that matter) and places them in a CSV.
     def writeToCSV(self, finalURL):
         csv = open(self.writeTo + '.csv', 'a', encoding="utf-8")
         csv.write(finalURL + "\n")
