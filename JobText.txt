@@ -2,7 +2,7 @@ job
 computer science
 both
 full time
-0
+100000
 Jacksonville,Florida
 bachelor
 entry

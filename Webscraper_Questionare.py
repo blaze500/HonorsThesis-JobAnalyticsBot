@@ -8,9 +8,10 @@ from selenium.webdriver.common.by import By
 import os
 import csv
 import LocationChecker
-import Webscraper_GoogleCareers
+import Webscraper_GoogleCareers2
 import Webscraper_Linkedin
 import Webscraper_Handshake
+import Webscraper_Indeed
 
 class JobFinder:
 
@@ -36,9 +37,18 @@ class JobFinder:
             self.Questionare()
 
         self.seleniumDriver = webdriver.Chrome("chromedriver.exe")
-        print("something")
-        wait = input("Press Enter to continue.")
-        print("something")
+
+        #self.seleniumDriver.get("https://www.linkedin.com/login")
+        #print("Please log in to your Linkedin account. Do not exit the Selenium Browser")
+        #wait = input("Press Enter to continue.")
+
+        #self.seleniumDriver.get("https://app.joinhandshake.com/login")
+        #print("Please log in to your Handshake account. Do not exit the Selenium Browser")
+        #wait = input("Press Enter to continue.")
+
+        #self.seleniumDriver.get("https://secure.indeed.com/auth?hl=en_US&co=US&continue=https%3A%2F%2Fwww.indeed.com%2F&tmpl=desktop&service=my&from=gnav-util-homepage&jsContinue=https%3A%2F%2Fwww.indeed.com%2F&empContinue=https%3A%2F%2Faccount.indeed.com%2Fmyaccess&_ga=2.216882070.1436526071.1662068128-19035690.1662068128")
+        #print("Please log in to your Indeed account. Do not exit the Selenium Browser")
+        #wait = input("Press Enter to continue.")
 
         print(self.type)
         print(self.field)
@@ -51,18 +61,14 @@ class JobFinder:
         print(self.writeTo)
         #createFile()
 
-
-
+        """
         googleJobs = Webscraper_GoogleCareers.GoogleCareerJobs(self.type, self.field, self.inPerson, self.fullTime,
                                                                self.salary, self.location, self.education,
                                                                self.experience, self.writeTo, self.seleniumDriver)
         googleJobs.googleJobsLinkMaker()
         googleJobs.findLinks()
 
-        print("something")
-        wait = input("Press Enter to continue.")
-        print("something")
-        
+
         # Linkedin needs login
         LinkedinJobs = Webscraper_Linkedin.LinkedinJobs(self.type, self.field, self.inPerson, self.fullTime,
                                                                self.salary, self.location, self.education,
@@ -70,7 +76,6 @@ class JobFinder:
         LinkedinJobs.LinkedinLinkMaker()
         LinkedinJobs.findLinks()
 
-        """
         HandshakeJobs = Webscraper_Handshake.HandshakeJobs(self.type, self.field, self.inPerson, self.fullTime,
                                                         self.salary, self.location, self.education,
                                                         self.experience, self.writeTo, self.seleniumDriver)
@@ -78,8 +83,13 @@ class JobFinder:
         HandshakeJobs.findLinks()
         """
 
+        indeedJobs = Webscraper_Indeed.IndeedJobs(self.type, self.field, self.inPerson, self.fullTime,
+                                                               self.salary, self.location, self.education,
+                                                               self.experience, self.writeTo, self.seleniumDriver)
+        indeedJobs.indeedJobsLinkMaker()
+        indeedJobs.findLinks()
+
         self.seleniumDriver.quit()
-        self.seleniumDriver.close()
 
     def Questionare(self):
 

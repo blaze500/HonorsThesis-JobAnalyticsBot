@@ -9,18 +9,7 @@ import os
 import csv
 import LocationChecker
 
-import requests
-from bs4 import BeautifulSoup
-import time
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-import os
-import csv
-import LocationChecker
-
-class HandshakeJobs:
+class IndeedJobs:
 
     def __init__(self, type, field, inPerson, fullTime, salary, location, education, experience, writeTo, seleniumDriver):
         self.type = type
@@ -34,31 +23,53 @@ class HandshakeJobs:
         self.writeTo = writeTo
         self.seleniumDriver = seleniumDriver
 
-    def HandshakeLinkMaker(self):
+    def indeedJobsLinkMaker(self):
 
-        self.HandshakeJobsLink ="https://app.joinhandshake.com/stu/postings?"
+        self.indeedJobsLink = "https://www.indeed.com/jobs?"
 
-        if self.type == "job":
-            self.HandshakeJobsLink +="job.job_types%5B%5D=9"
+        if self.field != "":
+            self.indeedJobsLink +="&q=" + self.field.replace(" ", "+")
+
+        if len(self.location) > 0:
+            self.indeedJobsLink +="&l=" + self.location.replace(" ", "+")
+
+        self.indeedJobsLink += "&sc=0kf%3A"
+
+        if self.education == "associate":
+            self.indeedJobsLink += "attr(FCGTU%7CQJZM9%7CUTPWG%252COR)"
+        elif self.education == "bachelor":
+            self.indeedJobsLink +="attr(FCGTU%7CHFDVW%7CQJZM9%7CUTPWG%252COR)"
+        elif self.education == "masters":
+            self.indeedJobsLink +="attr(EXSNN%7CFCGTU%7CHFDVW%7CQJZM9%7CUTPWG%252COR)"
         else:
-            self.HandshakeJobsLink +="job.job_types%5B%5D=3"
+            self.indeedJobsLink += "attr(FCGTU%7CQJZM9%252COR)"
 
-        if self.fullTime == "full time":
-            self.HandshakeJobsLink +="&employment_type_names%5B%5D=Full-Time"
+        if self.type == "internship":
+            self.indeedJobsLink += "jt(internship)"
+        elif self.fullTime == "full time":
+            self.indeedJobsLink +="jt(fulltime)"
         elif self.fullTime == "part time":
-            self.HandshakeJobsLink +="&employment_type_names%5B%5D=Part-Time"
+            self.indeedJobsLink +="jt(parttime)"
+
+        if self.inPerson == "remote":
+            self.indeedJobsLink +="attr(DSQF7)"
+
+        if self.experience == "entry":
+            self.indeedJobsLink +="explvl(ENTRY_LEVEL)"
+        elif self.experience =="mid":
+            self.indeedJobsLink +="explvl(MID_LEVEL)"
+        elif self.experience =="senior":
+            self.indeedJobsLink +="explvl(SENIOR_LEVEL)"
         else:
-            self.HandshakeJobsLink +="&employment_type_names%5B%5D=Full-Time&employment_type_names%5B%5D=Part-Time"
+            self.indeedJobsLink +="attr(D7S5D)"
 
-        self.HandshakeJobsLink += "&query=" + self.field.replace(" ", "%20")
-
-
-        print(self.HandshakeJobsLink)
+        self.indeedJobsLink += "%3B"
+        print(self.indeedJobsLink)
 
     def linkToHTML(self, link):
         #Gets URL, add .content to turn it into something readable
         self.seleniumDriver.get(link.strip())
-        time.sleep(1.5)
+        time.sleep(2)
         try:
             WebDriverWait(self.seleniumDriver, 10).until(
                 EC.presence_of_element_located((By.TAG_NAME, "li"))
@@ -71,7 +82,7 @@ class HandshakeJobs:
         return self.seleniumDriver.find_elements(By.TAG_NAME, "a")
 
     def findLinks(self):
-        link = self.HandshakeJobsLink
+        link = self.indeedJobsLink
         page = 1
         if not os.path.exists(self.writeTo + '.csv'):
             open(self.writeTo + '.csv', 'x')
@@ -84,7 +95,7 @@ class HandshakeJobs:
                 if keepGoing == False:
                     break
                 page += 1
-                link = self.HandshakeJobsLink + "&page=" + str(page)
+                link = self.indeedJobsLink + "&start=" + str((page-1)*10)
                 print("nextLink= " + link)
             else:
                 print("Did not find what you are looking for!")
@@ -108,7 +119,7 @@ class HandshakeJobs:
         return False
 
     def linkConditions(self, url):
-        if "/stu/jobs/" in url and "ref=open-in-new-tab" in url:
+        if "/rc/clk?jk=" in url:
             return True
         return False
 
