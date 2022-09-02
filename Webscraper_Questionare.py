@@ -18,7 +18,7 @@ class JobFinder:
     #Starts the Program
     def __init__(self):
 
-        switch= True
+        switch= False
 
         if switch is True:
             self.readFile("JobText")
@@ -104,7 +104,7 @@ class JobFinder:
                 print("The Answer You Put In Was Wrong. Please Try Again.")
         print("")
 
-        print("Do You Want This Full Time or Part Time? (if you want both, just hit enter)")
+        print("Do You Want This Full Time or Part Time? (if you want both, just type in both)")
         while True:
             self.fullTime = input("Your Answer:").lower()
             if self.fullTime == "full time" or self.fullTime == "part time" or self.fullTime == "both":
@@ -131,19 +131,23 @@ class JobFinder:
                 print("The city you were looking for isnt there")
             print("")
 
-            print(
-                "What state do you want this job to be located at? (If you are not looking for a specific state, hit enter)")
+            print("What state do you want this job to be located at? (If you are not looking for a specific state, hit enter)")
             print("PLEASE NOTE: The starting letter of each word MUST be capitalized")
             while True:
                 state = input("Your Answer:")
-                if state == "":
+                if state == "" and self.location == "":
                     break
+                elif len(state) > 0 and self.location == "":
+                    print("You must leave this blank or restart the program as you have no city.")
                 elif LocationChecker.isState(state):
-                    if len(self.location) > 0:
+                    if LocationChecker.isLocation(self.location + ",state"):
                         self.location += ","
-                    self.location += state
-                    break
-                print("The State you were looking for isnt there")
+                        self.location += state
+                        break
+                    else:
+                        print("The City and State you choose do note exist together. Please pick another pair of a City and a State.")
+                else:
+                    print("The State you were looking for isnt there")
             print(self.location)
             print("")
 
