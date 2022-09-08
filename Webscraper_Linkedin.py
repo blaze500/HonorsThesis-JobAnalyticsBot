@@ -20,7 +20,8 @@ class LinkedinJobs:
         self.location = location
         self.education = education
         self.experience = experience
-        self.writeTo = writeTo
+        #self.writeTo = writeTo
+        self.writeTo = "LinkedinJobs"
         self.seleniumDriver = seleniumDriver
 
 
@@ -123,7 +124,7 @@ class LinkedinJobs:
     def linkToHTML(self, link):
         #Gets URL, add .content to turn it into something readable
         self.seleniumDriver.get(link.strip())
-        time.sleep(1.5)
+        time.sleep(5)
         try:
             WebDriverWait(self.seleniumDriver, 10).until(
                 EC.presence_of_element_located((By.TAG_NAME, "li"))
