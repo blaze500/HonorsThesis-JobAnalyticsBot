@@ -13,6 +13,7 @@ import Webscraper_Linkedin
 import Webscraper_Handshake
 import Webscraper_Indeed
 import Webscraper_GetJobText
+import ProcessingText
 
 
 class JobFinder:
@@ -39,8 +40,7 @@ class JobFinder:
         print(self.experience)
         print(self.writeTo)
 
-        #self.LoginToJobs()
-        self.GetJobText()
+        self.ProcessJobText()
 
     def LoginToJobs(self):
 
@@ -202,18 +202,37 @@ class JobFinder:
         googleJobs.googleJobsLinkMaker()
         googleJobs.findLinks()
         """
-        self.ApplyToJobs()
+        self.GetJobText()
+
+
 
     def GetJobText(self):
         getJobText = Webscraper_GetJobText.JobTextGrabber(self.seleniumDriver)
+        getJobText.getHandshakeJobText()
+        getJobText.getIndeedJobText()
+        getJobText.getLinkedinJobText()
         self.ProcessJobText()
 
+
+
     def ProcessJobText(self):
+        TextProcessor = ProcessingText.TextProcessor()
+
+        TextProcessor.TextFilesToJobTextArrays()
+
+        TextProcessor.SpecialWordCounterAlgorithm()
+
+        TextProcessor.CleaningTextAlgorithm()
+
+        TextProcessor.WordCounterAlgorithm()
 
         self.EndProgram()
 
     def EndProgram(self):
         print("Bofa")
+
+
+
 
     def Questionare(self):
 

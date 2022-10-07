@@ -24,6 +24,7 @@ class JobTextGrabber:
             if not os.path.exists(fileName):
                 os.mkdir(fileName)
 
+
         #for file in os.scandir(path):
         #    os.remove(file.path)
 

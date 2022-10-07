@@ -1,0 +1,5 @@
+amazon web services
+python
+c#
+c++
+computer science
