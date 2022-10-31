@@ -8,7 +8,6 @@ from selenium.webdriver.common.by import By
 import os
 import csv
 import LocationChecker
-import Webscraper_GoogleCareers
 import Webscraper_Linkedin
 import Webscraper_Handshake
 import Webscraper_Indeed
@@ -20,16 +19,27 @@ from nltk.corpus import stopwords
 stopwords.words('english')
 import re
 from nltk.stem import WordNetLemmatizer
+from nltk.tokenize import word_tokenize
+nltk.download('punkt')
+nltk.download('averaged_perceptron_tagger')
+nltk.download('wordnet')
+nltk.download('omw-1.4')
+import TextCleaningLemmatizer
+from word2number import w2n
 
 class TextProcessor:
 
     #Starts the Program
-    def __init__(self):
+    def __init__(self, directoryNames):
 
-        self.directoryNames = ["HandshakeJobText", "IndeedJobText", "LinkedinJobText"]
+        self.directoryNames = directoryNames
+
+        # Years Of Experience (YOE), dictonaries which record the years of ___ found in each text.
+        self.YOEText = {}
 
         # Years Of Experience (YOE), dictonaries which record the years of ___ found in each text.
         self.YOEDictionaries = {}
+        self.YOEAllPhraseDictonary= {}
 
         # An array which contains the dictionaries for each job website
         self.SpecialWordDictionaries = {}
@@ -39,9 +49,20 @@ class TextProcessor:
 
         for directory in self.directoryNames:
             self.WordDictionaries[directory] = {}
+            self.YOEDictionaries[directory] = {}
+            self.YOEText[directory] = []
+            self.SpecialWordDictionaries[directory] = {}
+
+        self.AllWordsDictonary = {}
+
+        self.AllSpecialWordsDictonary = {}
 
         # An array which contains the arrays of each job website
         self.JobTexts = {}
+
+
+
+
 
     def TextFilesToJobTextArrays(self):
 
@@ -53,7 +74,7 @@ class TextProcessor:
                     directoryJobTexts.append(jobDescriptionText)
             self.JobTexts[fileName] = directoryJobTexts
 
-        #print(self.JobTexts)
+
 
 
     def CleaningTextAlgorithm(self):
@@ -62,22 +83,39 @@ class TextProcessor:
                 self.JobTexts[fileName][number] = self.cleanText(text)
 
 
+
+
+
     def cleanText(self, text):
 
-        textWithoutSpecialCharacters = text = re.sub(r"(@\[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)|^rt|http.+?", "", text)
+        textWithoutSpecialCharacters = re.sub(r"(@\[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)|^rt|http.+?", " ", text)
 
-        #print(textWithoutSpecialCharacters)
+        lemmatizer = TextCleaningLemmatizer.TextCleaningLemmatizer()
 
-        everyWordInText = textWithoutSpecialCharacters.split(" ")
+        lemmatizedText = lemmatizer.lemmatize_sentence(textWithoutSpecialCharacters)
+
+        everyWordInText = lemmatizedText.split(" ")
 
         fullyCleanedWords = []
-        for word in everyWordInText:
-            if word not in stopwords.words('english'):
-                fullyCleanedWords.append(word)
+
+
+
+        if os.path.exists('stopwords.txt'):
+            for word in everyWordInText:
+                if word not in stopwords.words('english') and word not in open('stopwords.txt').read():
+                    fullyCleanedWords.append(word)
+        else:
+            for word in everyWordInText:
+                if word not in stopwords.words('english'):
+                    fullyCleanedWords.append(word)
 
         fullyCleanedText = ' '.join(fullyCleanedWords)
 
+
         return fullyCleanedText
+
+
+
 
 
     def SpecialWordCounterAlgorithm(self):
@@ -86,7 +124,7 @@ class TextProcessor:
             for count, jobText in enumerate(self.JobTexts[fileName]):
                 self.JobTexts[fileName][count] = self.specialWordFinder(jobText, fileName)
 
-        #print(self.WordDictionaries)
+
 
 
 
@@ -101,10 +139,12 @@ class TextProcessor:
                     else:
                         self.WordDictionaries[fileName][word] = 1
 
-        for fileName in self.directoryNames:
-            self.WordDictionaries[fileName] = dict(sorted(self.WordDictionaries[fileName].items(), key=lambda x: x[1], reverse=True))
+                    if word in self.AllWordsDictonary:
+                        self.AllWordsDictonary[word] += 1
+                    else:
+                        self.AllWordsDictonary[word] = 1
 
-        #print(self.WordDictionaries)
+
 
 
 
@@ -120,16 +160,205 @@ class TextProcessor:
             splitText = text.split(word)
             wordsRemoved = len(splitText)-1
             if wordsRemoved > 0:
-                if word in self.WordDictionaries[fileName]:
-                    self.WordDictionaries[fileName][word] += wordsRemoved
+                if word in self.SpecialWordDictionaries[fileName]:
+                    self.SpecialWordDictionaries[fileName][word] += wordsRemoved
                 else:
-                    self.WordDictionaries[fileName][word] = wordsRemoved
+                    self.SpecialWordDictionaries[fileName][word] = wordsRemoved
+
+                if word in self.AllSpecialWordsDictonary:
+                    self.AllSpecialWordsDictonary[word] += wordsRemoved
+                else:
+                    self.AllSpecialWordsDictonary[word] = wordsRemoved
 
             newTextWithWordRemoved = ''.join(splitText)
             newText=newTextWithWordRemoved
 
-        #print(newText)
 
         specialWordsFile.close()
 
         return newText
+
+
+
+
+
+    def SortDictonaries(self):
+        for fileName in self.directoryNames:
+            self.WordDictionaries[fileName] = dict(sorted(self.WordDictionaries[fileName].items(), key=lambda x: x[1], reverse=True))
+
+        for fileName in self.directoryNames:
+            self.SpecialWordDictionaries[fileName] = dict(sorted(self.SpecialWordDictionaries[fileName].items(), key=lambda x: x[1], reverse=True))
+
+        self.AllWordsDictonary = dict(sorted(self.AllWordsDictonary.items(), key=lambda x: x[1], reverse=True))
+        self.AllSpecialWordsDictonary = dict(sorted(self.AllSpecialWordsDictonary.items(), key=lambda x: x[1], reverse=True))
+
+
+
+
+
+    def RemoveTopWordsInJobSearchDictsByPercentage(self,percantage):
+        documentsInEachDirectory = {}
+        newDirectoryDictonaries = {}
+
+        for fileName in self.directoryNames:
+            documentsInEachDirectory[fileName]=len(os.listdir(fileName))
+            newDirectoryDictonaries[fileName] = {}
+
+        for fileName in self.directoryNames:
+            documents =  int(documentsInEachDirectory[fileName])
+            for key, val in self.WordDictionaries[fileName].items():
+                if val >= round(documents*(1-percantage/100)):
+                    newDirectoryDictonaries[fileName][key] = val
+
+        return newDirectoryDictonaries
+
+
+
+
+    def RemoveTopAllWordsDicByPercentage(self,percantage):
+        newAllWordsDictonary = {}
+        totalDocuments = 0
+
+        for fileName in self.directoryNames:
+            totalDocuments += len(os.listdir(fileName))
+
+        for key, val in self.AllWordsDictonary.items():
+            if val >= round (totalDocuments * (1 - percantage / 100)):
+                newAllWordsDictonary[key] = val
+
+        return newAllWordsDictonary
+
+
+
+
+    def RemoveBottomWordsInJobSearchDictsByPercentage(self, percantage):
+        documentsInEachDirectory = {}
+        newDirectoryDictonaries = {}
+
+        for fileName in self.directoryNames:
+            documentsInEachDirectory[fileName] = len(os.listdir(fileName))
+            newDirectoryDictonaries[fileName] = {}
+
+        for fileName in self.directoryNames:
+            documents = int(documentsInEachDirectory[fileName])
+            for key, val in self.WordDictionaries[fileName].items():
+                if val >= round(documents * percantage / 100):
+                    newDirectoryDictonaries[fileName][key] = val
+
+        return newDirectoryDictonaries
+
+
+
+
+    def RemoveBottomAllWordsDicByPercentage(self, percantage):
+        newAllWordsDictonary = {}
+        totalDocuments = 0
+
+        for fileName in self.directoryNames:
+            totalDocuments += len(os.listdir(fileName))
+
+        for key, val in self.AllWordsDictonary.items():
+            if val >= round(totalDocuments * percantage/100):
+                newAllWordsDictonary[key] = val
+
+        return newAllWordsDictonary
+
+
+
+
+    def PrintDictionaries(self):
+        print("Word Dictonaries:")
+        print(self.WordDictionaries)
+
+        print("Special Word Dictonaries")
+        print(self.SpecialWordDictionaries)
+
+        print("All Words Dictonary")
+        print(self.AllWordsDictonary)
+
+        print("All Special Words Dictonary")
+        print(self.AllSpecialWordsDictonary)
+
+
+
+    def YearsOfExperienceScentenceGenerator(self):
+        for fileName in self.directoryNames:
+            for jobText in self.JobTexts[fileName]:
+                for scentence in re.split('\n|  |\.' , jobText):
+                    if 'year' in scentence and 'degree' not in scentence:
+                        newScentence = self.YOETextCleaner(scentence)
+                        self.YOEText[fileName].append(newScentence)
+
+
+    def YOETextCleaner(self, scentence):
+        redundentNumberRemovalScentence = re.sub('\(\d\)|\-\d|\s+', ' ', scentence)
+        specialCharacterRemovalScentence = re.sub(r"(@\[A-Za-z0-9]+)|([^0-9A-Za-z \t])", " ",redundentNumberRemovalScentence)
+        scentenceWithoutNumberAsText = []
+
+        for word in specialCharacterRemovalScentence.split():
+            try:
+                scentenceWithoutNumberAsText.append(str(w2n.word_to_num(word)))
+            except:
+                scentenceWithoutNumberAsText.append(word)
+        newScentence = ' '.join(scentenceWithoutNumberAsText)
+
+        return newScentence
+
+
+
+    def ProcessYearsOfExperienceText(self):
+        specialWordsFile = open('SpecialWords.txt', 'r', encoding="utf-8")
+
+        # replacing end splitting the text
+        # when newline ('\n') is seen.
+        specialWords = specialWordsFile.read().splitlines()
+
+        for fileName in self.directoryNames:
+            for scentence in self.YOEText[fileName]:
+                blankYears = re.findall('\d year', scentence)
+                specialWordsArray = []
+                for keyword in specialWords:
+                    if keyword in scentence:
+                        specialWordsArray.append(keyword)
+                yearLength= len(blankYears)
+                wordArrayLen = len(specialWordsArray)
+                if yearLength > 0 and wordArrayLen > 0:
+                    for year in blankYears:
+                        for specialWord in specialWordsArray:
+                            phrase = year + 's of experience in'
+
+                            if self.YOEDictionaries[fileName].get(phrase) is None:
+                                self.YOEDictionaries[fileName][phrase] = {}
+                            if self.YOEAllPhraseDictonary.get(phrase) is None:
+                                self.YOEAllPhraseDictonary[phrase] = {}
+
+                            if specialWord in self.YOEDictionaries[fileName][phrase]:
+                                self.YOEDictionaries[fileName][phrase][specialWord] += 1
+                            else:
+                                self.YOEDictionaries[fileName][phrase][specialWord] = 1
+
+                            if specialWord in self.YOEAllPhraseDictonary:
+                                self.YOEAllPhraseDictonary[phrase][specialWord] += 1
+                            else:
+                                self.YOEAllPhraseDictonary[phrase][specialWord] = 1
+
+
+
+        specialWordsFile.close()
+        print({key: value for key, value in sorted(self.YOEAllPhraseDictonary.items(), reverse=True)})
+        print("funny space")
+        print(self.YOEAllPhraseDictonary)
+
+
+    def ReturnWordDictionaries(self):
+        return self.WordDictionaries
+
+    def ReturnAllWordsDictonaries(self):
+        return self.AllWordsDictonary
+
+    def ReturnSpecialWordDictionaries(self):
+        return self.SpecialWordDictionaries
+
+    def ReturnAllSpecialWordsDictonary(self):
+        return self.AllSpecialWordsDictonary
+

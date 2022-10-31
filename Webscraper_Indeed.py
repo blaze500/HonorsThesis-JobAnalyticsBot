@@ -11,7 +11,7 @@ import LocationChecker
 
 class IndeedJobs:
 
-    def __init__(self, type, field, inPerson, fullTime, salary, location, education, experience, writeTo, seleniumDriver):
+    def __init__(self, type, field, inPerson, fullTime, salary, location, education, experience, writeTo, numberOfJobsLimit, seleniumDriver):
         self.type = type
         self.field = field
         self.inPerson = inPerson
@@ -20,8 +20,10 @@ class IndeedJobs:
         self.location = location
         self.education = education
         self.experience = experience
-        #self.writeTo = writeTo
-        self.writeTo = "IndeedJobs"
+        self.writeTo = writeTo
+        self.numberOfJobsLimit = 1000000
+        if numberOfJobsLimit is not None:
+            self.numberOfJobsLimit = numberOfJobsLimit
         self.seleniumDriver = seleniumDriver
 
 
@@ -192,10 +194,13 @@ class IndeedJobs:
         urlCleaning=[a_tag.get_attribute("href") for a_tag in a_tags if self.isProperLink(a_tag.get_attribute("href"))]
         # Gets all of the links that are job postings
         urls=[url for url in urlCleaning if self.linkConditions(url)]
-        if len(urls) > 0:
+        urlsInCSV = [url for url in urls if url not in open(self.writeTo + '.csv', encoding="utf-8").read()]
+        if len(urlsInCSV) > 0:
             for url in urls:
                 if url not in open(self.writeTo + '.csv', encoding="utf-8").read():
                     self.writeToCSV(url)
+                if self.checkIfEnoughLinksInCSV():
+                    return False
             return True
         return False
 
@@ -209,3 +214,11 @@ class IndeedJobs:
         csv.write(finalURL + "\n")
         csv.close()
 
+
+    def checkIfEnoughLinksInCSV(self):
+        csv = open(self.writeTo + '.csv', encoding="utf-8")
+        numberOfLines = len(csv.readlines())
+        csv.close()
+        if numberOfLines >= self.numberOfJobsLimit:
+            return True
+        return False

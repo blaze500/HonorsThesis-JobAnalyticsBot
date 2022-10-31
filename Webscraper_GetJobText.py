@@ -8,7 +8,6 @@ from selenium.webdriver.common.by import By
 import os
 import csv
 import LocationChecker
-import Webscraper_GoogleCareers
 import Webscraper_Linkedin
 import Webscraper_Handshake
 import Webscraper_Indeed
@@ -17,56 +16,76 @@ import html2text
 class JobTextGrabber:
 
     #Starts the Program
-    def __init__(self, seleniumDriver):
+    def __init__(self, seleniumDriver, directoryNames):
         self.seleniumDriver = seleniumDriver
-        directoryNames = ["HandshakeJobText", "IndeedJobText", "LinkedinJobText"]
-        for fileName in directoryNames:
-            if not os.path.exists(fileName):
-                os.mkdir(fileName)
+        self.directoryNames = directoryNames
+        #directoryNames = ["HandshakeJobText", "IndeedJobText", "LinkedinJobText"]
+        for fileName in self.directoryNames:
+            if not os.path.exists(fileName + "Text"):
+                os.mkdir(fileName + "Text")
 
 
         #for file in os.scandir(path):
         #    os.remove(file.path)
 
 
-    def getHandshakeJobText(self):
-        reader = csv.reader(open('HandshakeJobs.csv', 'rt'), delimiter=',')
+    def getHandshakeJobText(self, csvName):
+        reader = csv.reader(open(csvName + '.csv', 'rt'), delimiter=',')
         jobTextNumber = 0
         for row in reader:
             self.seleniumDriver.get(row[0])
             time.sleep(3)
-            jobDescriptionTextHTML = self.seleniumDriver.find_element(By.CLASS_NAME, "style__margin-control___1oseO")
-            jobDescriptionText = html2text.html2text(jobDescriptionTextHTML.get_attribute("innerHTML"))
-            self.writeToTxt('HandshakeJobText', str(jobTextNumber), jobDescriptionText)
-            jobTextNumber += 1
+
+            try:
+                jobDescriptionTextHTML = self.seleniumDriver.find_element(By.CLASS_NAME, "style__margin-control___1oseO")
+                jobDescriptionText = html2text.html2text(jobDescriptionTextHTML.get_attribute("innerHTML"))
+                self.writeToTxt(self.directoryNames[0] + 'Text', str(jobTextNumber), jobDescriptionText)
+                jobTextNumber += 1
+            except:
+                print("This link caused a problem in the getHandshakeJobText method: " + row[0])
 
 
-    def getIndeedJobText(self):
-        reader = csv.reader(open('IndeedJobs.csv', 'rt'), delimiter=',')
+    def getIndeedJobText(self, csvName):
+        reader = csv.reader(open(csvName + '.csv', 'rt'), delimiter=',')
         jobTextNumber = 0
         for row in reader:
             self.seleniumDriver.get(row[0])
             time.sleep(3)
-            jobDescriptionTextHTML = self.seleniumDriver.find_element(By.ID, "jobDescriptionText")
-            jobDescriptionText = html2text.html2text(jobDescriptionTextHTML.get_attribute("innerHTML"))
-            self.writeToTxt('IndeedJobText', str(jobTextNumber), jobDescriptionText)
-            jobTextNumber += 1
 
-    def getLinkedinJobText(self):
-        reader = csv.reader(open('LinkedinJobs.csv', 'rt'), delimiter=',')
+            try:
+                jobDescriptionTextHTML = self.seleniumDriver.find_element(By.ID, "jobDescriptionText")
+                jobDescriptionText = html2text.html2text(jobDescriptionTextHTML.get_attribute("innerHTML"))
+                self.writeToTxt(self.directoryNames[1] + 'Text', str(jobTextNumber), jobDescriptionText)
+                jobTextNumber += 1
+            except:
+                print("This link caused a problem in the getIndeedJobText method: " + row[0])
+
+    def getLinkedinJobText(self, csvName):
+        reader = csv.reader(open(csvName + '.csv', 'rt'), delimiter=',')
         jobTextNumber = 0
         for row in reader:
+            goToNext = False
+
             self.seleniumDriver.get(row[0])
             time.sleep(3)
+
             try:
                 jobDescriptionTextHTML = self.seleniumDriver.find_element(By.ID, "job-details")
                 jobDescriptionText = html2text.html2text(jobDescriptionTextHTML.get_attribute("innerHTML"))
-                self.writeToTxt('LinkedinJobText' + str(jobTextNumber), jobDescriptionText)
+                self.writeToTxt(self.directoryNames[2] + 'Text', str(jobTextNumber), jobDescriptionText)
+                jobTextNumber += 1
             except:
-                jobDescriptionTextHTML = self.seleniumDriver.find_element(By.CLASS_NAME, "show-more-less-html__markup")
-                jobDescriptionText = html2text.html2text(jobDescriptionTextHTML.get_attribute("innerHTML"))
-                self.writeToTxt('LinkedinJobText', str(jobTextNumber), jobDescriptionText)
-            jobTextNumber += 1
+                goToNext = True
+
+            if goToNext is True:
+                try:
+                    jobDescriptionTextHTML = self.seleniumDriver.find_element(By.CLASS_NAME, "show-more-less-html__markup")
+                    jobDescriptionText = html2text.html2text(jobDescriptionTextHTML.get_attribute("innerHTML"))
+                    self.writeToTxt(self.directoryNames[2] + 'Text', str(jobTextNumber), jobDescriptionText)
+                    jobTextNumber += 1
+                except:
+                    print("This link caused a problem in the getLinkedinJobText method: " + row[0])
+
 
     def writeToTxt(self, fileName, fileNumber, jobDescriptionText):
         txtFile = open(fileName + '/' + fileName + fileNumber + '.txt', 'w', encoding="utf-8")

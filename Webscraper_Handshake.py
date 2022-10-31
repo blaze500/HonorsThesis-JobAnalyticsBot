@@ -22,7 +22,7 @@ import LocationChecker
 
 class HandshakeJobs:
 
-    def __init__(self, type, field, inPerson, fullTime, salary, location, education, experience, writeTo, seleniumDriver):
+    def __init__(self, type, field, inPerson, fullTime, salary, location, education, experience, writeTo, numberOfJobsLimit, seleniumDriver):
         self.type = type
         self.field = field
         self.inPerson = inPerson
@@ -31,8 +31,10 @@ class HandshakeJobs:
         self.location = location
         self.education = education
         self.experience = experience
-        #self.writeTo = writeTo
-        self.writeTo = "HandshakeJobs"
+        self.writeTo = writeTo
+        self.numberOfJobsLimit = 1000000
+        if numberOfJobsLimit is not None:
+            self.numberOfJobsLimit = numberOfJobsLimit
         self.seleniumDriver = seleniumDriver
 
 
@@ -183,6 +185,8 @@ class HandshakeJobs:
             for url in urls:
                 if url not in open(self.writeTo + '.csv', encoding="utf-8").read():
                     self.writeToCSV(url)
+                if self.checkIfEnoughLinksInCSV():
+                    return False
             return True
         return False
 
@@ -196,3 +200,10 @@ class HandshakeJobs:
         csv.write(finalURL + "\n")
         csv.close()
 
+    def checkIfEnoughLinksInCSV(self):
+        csv = open(self.writeTo + '.csv', encoding="utf-8")
+        numberOfLines = len(csv.readlines())
+        csv.close()
+        if numberOfLines >= self.numberOfJobsLimit:
+            return True
+        return False
