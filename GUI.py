@@ -17,6 +17,7 @@ import Webscraper_GetStopwords
 import easygui as gui
 import Webscraper_JobFinder as JobFinder
 import sys
+import DeleteFiles
 
 class GUI:
 
@@ -28,15 +29,26 @@ class GUI:
 
         importantMessage = "Before The Program Begins, Would You Like This Program To Gather Stopwords From Multiple Job Postings? \nThis Will Add At Least An Hour To Your Wait Time BUT Give More Refined Results For What Words They Are \nLooking For In Your Resume. \n\n This Is Not Recommended If You Have Done This Recently, But IS Recommended If You Have Never Done This."
         self.stopwordCheck = gui.ynbox(importantMessage, title='Resume Optimizer')
+        #DeleteFiles.DeleteJobFiles(self.stopwordCheck)
 
         self.Questionare()
+
+        msg1 = "What words are you looking for in these jobs?\n\nPlease list words/phrases seperated by commas. For example: software engineer, amazon web services, c+, ect. \n\nIt is important to note that this program is unable to find 2+ word phrases (in other words it can only find single words) \n\nIt also helps to put phrases in that contain special characters."
+        self.specialWords = gui.enterbox(msg1, title='Resume Optimizer')
+        if self.specialWords is None:
+            sys.exit()
+        else:
+            self.specialWords.replace(', ', '\n')
+            txtFile = open('SpecialWords.txt', 'a', encoding="utf-8")
+            txtFile.write(self.specialWords.replace(', ', '\n'))
+            txtFile.close()
+
         gui.msgbox("Please Do Not Close The Browser That Will Open Up After Reading This Message \nAt Any Point While Using The Program Or It Will Cause An Error!")
         self.JobFinder = JobFinder.JobFinder(self.field, self.type, self.location, self.inPerson, self.fullTime, self.salary, self.experience)
         gui.msgbox("This Browser Is What Will Be Referred To As The Selenium Browser. \nAgain, Please Do NOT Close This Browser At Any Point During The Program!")
         self.DoProgram()
 
     def DoProgram(self):
-
         #self.JobFinder.LoginToJobs()
         #self.JobFinder.GetJobLinks()
         #self.JobFinder.GetJobText()
@@ -46,9 +58,38 @@ class GUI:
 
         specialWordsAndDictonary=self.JobFinder.ProcessJobText()
 
-        for dic in specialWordsAndDictonary:
-            print(dic)
+        specialWordsText='Here are the results from the special words you looked for:\n\n'
+        for key, value in specialWordsAndDictonary[0].items():
+            specialWordsText += ' %s was found %s times\n\n' % (key, value)
+        gui.msgbox(specialWordsText,  title='Resume Optimizer')
 
+
+        YOEText=''
+        for key, value in specialWordsAndDictonary[1].items():
+            YOEText += key + '\n'
+            for word, num in value.items():
+                YOEText += '\t'+ word + '(This was found ' + str(num) + ' times)\n'
+            YOEText += '\n'
+        gui.msgbox(YOEText,  title='Resume Optimizer')
+
+        wordsFound=''
+        for key in specialWordsAndDictonary[2].keys():
+            wordsFound += key + ', '
+
+        gui.msgbox('Here Are The List Of Words This Program Has Found To Optimize Your Resume:\n\n' + wordsFound, title='Resume Optimizer')
+        savingWords=gui.ynbox("Would You Like To Save These Words?", title='Resume Optimizer')
+        if savingWords:
+            gui.msgbox("Please Select The Location You Would Like To Save These Words At.", title='Resume Optimizer')
+            fileLocation = gui.diropenbox()
+            if fileLocation is not None:
+                textFile = open(fileLocation + '\ResumeWords.txt', 'w', encoding="utf-8")
+                textFile.write(wordsFound.replace(', ','\n'))
+                textFile.close()
+                gui.msgbox("The File Has Been Saved.\nThe Name Of The File Is ResumeWords.txt.", title='Resume Optimizer')
+            else:
+                gui.msgbox("You Have Choosen Not To Save The File.", title='Resume Optimizer')
+
+        gui.msgbox("The Program Has Ended.\nThank You For Using The Resume Optimizer.\nAnd Good Luck On Your Job Search!", title='Resume Optimizer')
         self.JobFinder.EndProgram()
 
 

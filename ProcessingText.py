@@ -191,6 +191,8 @@ class TextProcessor:
 
         self.AllWordsDictonary = dict(sorted(self.AllWordsDictonary.items(), key=lambda x: x[1], reverse=True))
         self.AllSpecialWordsDictonary = dict(sorted(self.AllSpecialWordsDictonary.items(), key=lambda x: x[1], reverse=True))
+        self.YOEAllPhraseDictonary={key: value for key, value in sorted(self.YOEAllPhraseDictonary.items(), reverse=True)}
+
 
 
 
@@ -345,9 +347,6 @@ class TextProcessor:
 
 
         specialWordsFile.close()
-        print({key: value for key, value in sorted(self.YOEAllPhraseDictonary.items(), reverse=True)})
-        print("funny space")
-        print(self.YOEAllPhraseDictonary)
 
 
     def ReturnWordDictionaries(self):
@@ -362,3 +361,5 @@ class TextProcessor:
     def ReturnAllSpecialWordsDictonary(self):
         return self.AllSpecialWordsDictonary
 
+    def ReturnYOEAllPhraseDictonary(self):
+        return self.YOEAllPhraseDictonary

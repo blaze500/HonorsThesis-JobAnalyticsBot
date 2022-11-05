@@ -122,7 +122,7 @@ class StopWordGenerator:
 
         TextProcessor.SortDictonaries()
 
-        stopWordDictonaries = TextProcessor.RemoveTopWordsInJobSearchDictsByPercentage(80)
+        stopWordDictonaries = TextProcessor.RemoveTopWordsInJobSearchDictsByPercentage(75)
 
         print(stopWordDictonaries)
 

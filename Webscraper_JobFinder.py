@@ -209,10 +209,9 @@ class JobFinder:
 
         TextProcessor.SortDictonaries()
 
-        return [TextProcessor.ReturnAllSpecialWordsDictonary(), TextProcessor.RemoveBottomAllWordsDicByPercentage(10)]
+        return [TextProcessor.ReturnAllSpecialWordsDictonary(), TextProcessor.ReturnYOEAllPhraseDictonary(), TextProcessor.RemoveBottomAllWordsDicByPercentage(10)]
 
     def EndProgram(self):
-        self.seleniumDriver.close()
         self.seleniumDriver.quit()
 
     def Questionare(self):
