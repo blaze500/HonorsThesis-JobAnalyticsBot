@@ -20,7 +20,7 @@ import sys
 class JobFinder:
 
     #Starts the Program
-    def __init__(self, field, type, location, inPerson, fullTime, salary, experience):
+    def __init__(self, field, type, location, inPerson, fullTime, salary, experience, education):
         self.field = field
         self.type = type
         self.location = location
@@ -28,6 +28,7 @@ class JobFinder:
         self.fullTime = fullTime
         self.salary = salary
         self.experience = experience
+        self.education = education
         self.seleniumDriver = webdriver.Chrome("chromedriver.exe")
         self.automate = False
 
@@ -140,13 +141,13 @@ class JobFinder:
 
         else:
             self.seleniumDriver.get("https://secure.indeed.com/auth?hl=en_US&co=US&continue=https%3A%2F%2Fwww.indeed.com%2F&tmpl=desktop&service=my&from=gnav-util-homepage&jsContinue=https%3A%2F%2Fwww.indeed.com%2F&empContinue=https%3A%2F%2Faccount.indeed.com%2Fmyaccess&_ga=2.216882070.1436526071.1662068128-19035690.1662068128")
-            gui.msgbox("Please Log In To Your Indeed Account On The Selenium Browser. Once You Are Done Click OK On This Message Box. \nDo not exit the Browser!")
+            gui.msgbox("Please Log In To Your Indeed Account On The Selenium Browser. Once You Are Done Click OK On This Message Box. \nDo not exit the Browser!", title='Job Analytics Bot')
 
             self.seleniumDriver.get("https://www.linkedin.com/login")
-            gui.msgbox("Please Log In To Your Linkedin Account On The Selenium Browser. Once You Are Done Click OK On This Message Box. \nDo not exit the Browser!")
+            gui.msgbox("Please Log In To Your Linkedin Account On The Selenium Browser. Once You Are Done Click OK On This Message Box. \nDo not exit the Browser!", title='Job Analytics Bot')
 
             self.seleniumDriver.get("https://app.joinhandshake.com/login")
-            gui.msgbox("Please Log In To Your Handshake Account On The Selenium Browser. Once You Are Done Click OK On This Message Box. \nDo not exit the Browser!")
+            gui.msgbox("Please Log In To Your Handshake Account On The Selenium Browser. Once You Are Done Click OK On This Message Box. \nDo not exit the Browser!", title='Job Analytics Bot')
 
 
     def GetJobLinks(self):
@@ -217,7 +218,7 @@ class JobFinder:
     def Questionare(self):
         msg1 = "What Field Of Work Are You Looking For?"
         fow = "Field Of Word"
-        self.field = gui.enterbox(msg1, title='Resume Optimizer')
+        self.field = gui.enterbox(msg1, title='Job Analytics Bot')
         if self.field is None:
             sys.exit()
         elif len(self.field) > 0:
@@ -226,7 +227,7 @@ class JobFinder:
 
         msg2 = "Are You Looking For a Job or Internship?"
         joi = ["Job", "Internship"]
-        self.type = gui.buttonbox(msg2, title='Resume Optimizer', choices=joi)
+        self.type = gui.buttonbox(msg2, title='Job Analytics Bot', choices=joi)
         if self.type is None:
             sys.exit()
         else:
@@ -235,7 +236,7 @@ class JobFinder:
         while True:
             msg3 = "What city do you want this job to be located at? \nIf you are not looking for a specific location leave these fields blank"
             cos = ["City", "State"]
-            cityAndState = gui.multenterbox(msg3, title='Resume Optimizer', fields=cos)
+            cityAndState = gui.multenterbox(msg3, title='Job Analytics Bot', fields=cos)
 
             if cityAndState is None:
                 sys.exit()
@@ -255,7 +256,7 @@ class JobFinder:
 
         msg4 = "Do You Want This Job To Be Remote, In Person, or Both?"
         roip = ["Remote", "In Person", "Both"]
-        self.inPerson = gui.buttonbox(msg4, title='Resume Optimizer', choices=roip).lower()
+        self.inPerson = gui.buttonbox(msg4, title='Job Analytics Bot', choices=roip).lower()
         if self.inPerson is None:
             sys.exit()
         else:
@@ -263,20 +264,20 @@ class JobFinder:
 
         msg5 = "Do You Want This Job To Be Full Time, Part Time, Or Both?"
         ftopt = ["Full Time", "Part Time", "Both"]
-        self.fullTime = gui.buttonbox(msg5, title='Resume Optimizer', choices=ftopt).lower()
+        self.fullTime = gui.buttonbox(msg5, title='Job Analytics Bot', choices=ftopt).lower()
         if self.fullTime is None:
             sys.exit()
         else:
             self.fullTime.lower()
 
         msg6 = "What Salary Are You Looking For? \nType In 0 If You Aren't Looking For A Specific Salary"
-        self.salary = gui.integerbox(msg6, title='Resume Optimizer')
+        self.salary = gui.integerbox(msg6, title='Job Analytics Bot')
         if self.salary is None:
             sys.exit()
 
         msg7 = "What Is The Highest Level Of College Education You Have?"
         degree = ["Associate", "Bachelor", "Masters", "None"]
-        self.education = gui.buttonbox(msg7, title='Resume Optimizer', choices=degree).lower()
+        self.education = gui.buttonbox(msg7, title='Job Analytics Bot', choices=degree).lower()
         if self.education is None:
             sys.exit()
         elif self.education == "None":
@@ -286,7 +287,7 @@ class JobFinder:
 
         msg8 = "What is your experience level?"
         experience = ["Entry", "Mid", "Senior", "None"]
-        self.experience = gui.buttonbox(msg8, title='Resume Optimizer', choices=experience).lower()
+        self.experience = gui.buttonbox(msg8, title='Job Analytics Bot', choices=experience).lower()
         if self.experience is None:
             sys.exit()
         elif self.experience == "None":

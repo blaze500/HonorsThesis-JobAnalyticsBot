@@ -8,7 +8,7 @@ def isCity(city):
         return False
     reader = csv.reader(open('US_City_And_States/' + city[0].upper() + '_Cities_PlusTheirStates.csv', 'rt'), delimiter=',')
     for row in reader:
-        if city == row[0]:
+        if city.lower() == row[0].lower():
             return True
     return False
 
@@ -17,7 +17,7 @@ def isState(state):
         return False
     reader = csv.reader(open('US_City_And_States/US_States.csv', 'rt'), delimiter=',')
     for row in reader:
-        if state == row[0]:
+        if state.lower() == row[0].lower():
             return True
     return False
 
@@ -27,6 +27,6 @@ def isLocation(location):
     reader = csv.reader(open('US_City_And_States/' + location[0].upper() + '_Cities_PlusTheirStates.csv', 'rt'), delimiter=',')
     for row in reader:
         cityAndStateLocation = row[0] +',' + row[1]
-        if location == cityAndStateLocation:
+        if location.lower() == cityAndStateLocation.lower():
             return True
     return False

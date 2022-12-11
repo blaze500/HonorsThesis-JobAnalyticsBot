@@ -46,8 +46,15 @@ class IndeedJobs:
 
         # Turns spaces into +, as weblinks cannot function with spaces in them. Normally however, this
         # is done by turning the space into its character number and then hexadecimal equivalent.
-        if self.field != "":
-            self.indeedJobsLink +="&q=" + self.field.replace(" ", "+")
+        if self.field != "" or self.salary >0:
+            self.indeedJobsLink += "&q="
+            if self.field != "":
+                self.indeedJobsLink += self.field.replace(" ", "+")
+            if self.salary > 0:
+                if len(self.indeedJobsLink) > 31:
+                    self.indeedJobsLink += "+"
+                salaryWithCommas= '%24'+str("{:,}".format(self.salary))
+                self.indeedJobsLink +=salaryWithCommas.replace(",","%2C")
 
         # Turns spaces into +, as weblinks cannot function with spaces in them. Normally however, this
         # is done by turning the space into its character number and then hexadecimal equivalent.
