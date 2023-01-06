@@ -1,13 +1,8 @@
-import requests
-from bs4 import BeautifulSoup
 import time
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 import os
-import csv
-import LocationChecker
 
 class LinkedinJobs:
 
@@ -205,7 +200,7 @@ class LinkedinJobs:
     # Typically each job search will have their own thing in each link to
     # differentiate a job from some other link.
     def linkConditions(self, url):
-        if "/jobs/view/" in url and "/jobs/view/externalApply/" not in url:
+        if "/jobs/view/" in url and "/jobs/view/externalApply/" not in url and "JOBS_HOME_ORGANIC" not in url and "alternateChannel" not in url:
             return True
         return False
 
@@ -220,7 +215,9 @@ class LinkedinJobs:
         urlCleaning=[a_tag.get_attribute("href") for a_tag in a_tags if self.isProperLink(a_tag.get_attribute("href"))]
         # Gets all of the links that are job postings
         urls=[url for url in urlCleaning if self.linkConditions(url)]
-        if len(urls) > 0:
+        urlsInCSV = [url for url in urls if url not in open(self.writeTo + '.csv', encoding="utf-8").read()]
+        print(urlsInCSV)
+        if len(urlsInCSV) > 0:
             for url in urls:
                 if url not in open(self.writeTo + '.csv', encoding="utf-8").read():
                     self.writeToCSV(url)

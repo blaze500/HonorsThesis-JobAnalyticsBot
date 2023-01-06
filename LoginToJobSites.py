@@ -1,4 +1,3 @@
-import os
 import csv
 
 def isCity(city):

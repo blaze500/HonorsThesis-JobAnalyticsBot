@@ -1,20 +1,12 @@
-import requests
-from bs4 import BeautifulSoup
 import time
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-import os
-import csv
 import LocationChecker
-import Webscraper_GoogleCareers
 import Webscraper_Linkedin
 import Webscraper_Handshake
 import Webscraper_Indeed
 import Webscraper_GetJobText
 import ProcessingText
-
 
 class JobFinder:
 
@@ -195,13 +187,6 @@ class JobFinder:
         HandshakeJobs.HandshakeLinkMaker()
         HandshakeJobs.findLinks()
 
-        """
-        googleJobs = Webscraper_GoogleCareers.GoogleCareerJobs(self.type, self.field, self.inPerson, self.fullTime,
-                                                               self.salary, self.location, self.education,
-                                                               self.experience, self.writeTo, self.seleniumDriver)
-        googleJobs.googleJobsLinkMaker()
-        googleJobs.findLinks()
-        """
         self.GetJobText()
 
 
@@ -349,5 +334,4 @@ class JobFinder:
         file.close()
         return self
 
-JobFinder()
 

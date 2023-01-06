@@ -1,24 +1,9 @@
-import requests
-from bs4 import BeautifulSoup
 import time
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 import os
-import csv
-import LocationChecker
 
-import requests
-from bs4 import BeautifulSoup
-import time
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-import os
-import csv
-import LocationChecker
 
 class HandshakeJobs:
 
@@ -55,10 +40,10 @@ class HandshakeJobs:
 
         self.HandshakeJobsLink ="https://app.joinhandshake.com/stu/postings?"
 
-        if self.type == "job":
-            self.HandshakeJobsLink +="job.job_types%5B%5D=9"
-        else:
+        if self.type == "internship":
             self.HandshakeJobsLink +="job.job_types%5B%5D=3"
+        else:
+            self.HandshakeJobsLink +="job.job_types%5B%5D=9"
 
         if self.fullTime == "full time":
             self.HandshakeJobsLink +="&employment_type_names%5B%5D=Full-Time"
@@ -67,6 +52,15 @@ class HandshakeJobs:
         else:
             self.HandshakeJobsLink +="&employment_type_names%5B%5D=Full-Time&employment_type_names%5B%5D=Part-Time"
 
+        if self.salary > 0:
+            self.HandshakeJobsLink +="&job.salary_types%5B%5D=1"
+
+        if self.inPerson == "remote":
+            self.HandshakeJobsLink += "&job.remote=true"
+        elif self.inPerson == "in person":
+            self.HandshakeJobsLink += "&job.on_site=true"
+        else:
+            self.HandshakeJobsLink += "&job.remote=true&job.on_site=true"
 
         #Replaces spaces with character number and then hexadecimal equivalent, as web links cannot function with a space in them.
         self.HandshakeJobsLink += "&query=" + self.field.replace(" ", "%20")
@@ -181,7 +175,8 @@ class HandshakeJobs:
         urlCleaning=[a_tag.get_attribute("href") for a_tag in a_tags if self.isProperLink(a_tag.get_attribute("href"))]
         # Gets all of the links that are job postings
         urls=[url for url in urlCleaning if self.linkConditions(url)]
-        if len(urls) > 0:
+        urlsInCSV = [url for url in urls if url not in open(self.writeTo + '.csv', encoding="utf-8").read()]
+        if len(urlsInCSV) > 0:
             for url in urls:
                 if url not in open(self.writeTo + '.csv', encoding="utf-8").read():
                     self.writeToCSV(url)

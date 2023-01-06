@@ -1,16 +1,7 @@
-import requests
-from bs4 import BeautifulSoup
 import time
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 import os
 import csv
-import LocationChecker
-import Webscraper_Linkedin
-import Webscraper_Handshake
-import Webscraper_Indeed
 import html2text
 
 class JobTextGrabber:
@@ -37,7 +28,7 @@ class JobTextGrabber:
             time.sleep(3)
 
             try:
-                jobDescriptionTextHTML = self.seleniumDriver.find_element(By.CLASS_NAME, "style__margin-control___1oseO")
+                jobDescriptionTextHTML = self.seleniumDriver.find_element(By.CLASS_NAME, "style__formatted___qRoxk")
                 jobDescriptionText = html2text.html2text(jobDescriptionTextHTML.get_attribute("innerHTML"))
                 self.writeToTxt(self.directoryNames[0] + 'Text', str(jobTextNumber), jobDescriptionText)
                 jobTextNumber += 1

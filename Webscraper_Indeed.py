@@ -1,13 +1,9 @@
-import requests
-from bs4 import BeautifulSoup
 import time
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 import os
-import csv
-import LocationChecker
+
 
 class IndeedJobs:
 

@@ -1,25 +1,9 @@
-import requests
-from bs4 import BeautifulSoup
-import time
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium import webdriver
-from selenium.webdriver.common.by import By
 import os
-import csv
-import LocationChecker
-import Webscraper_Linkedin
-import Webscraper_Handshake
-import Webscraper_Indeed
-import html2text
-import nltk
 import nltk
 nltk.download('stopwords')
 from nltk.corpus import stopwords
 stopwords.words('english')
 import re
-from nltk.stem import WordNetLemmatizer
-from nltk.tokenize import word_tokenize
 nltk.download('punkt')
 nltk.download('averaged_perceptron_tagger')
 nltk.download('wordnet')
@@ -157,18 +141,18 @@ class TextProcessor:
         specialWords = specialWordsFile.read().splitlines()
 
         for word in specialWords:
-            splitText = text.split(word)
+            splitText = text.split(word.lower())
             wordsRemoved = len(splitText)-1
             if wordsRemoved > 0:
-                if word in self.SpecialWordDictionaries[fileName]:
-                    self.SpecialWordDictionaries[fileName][word] += wordsRemoved
+                if word.lower() in self.SpecialWordDictionaries[fileName]:
+                    self.SpecialWordDictionaries[fileName][word.lower()] += wordsRemoved
                 else:
-                    self.SpecialWordDictionaries[fileName][word] = wordsRemoved
+                    self.SpecialWordDictionaries[fileName][word.lower()] = wordsRemoved
 
-                if word in self.AllSpecialWordsDictonary:
-                    self.AllSpecialWordsDictonary[word] += wordsRemoved
+                if word.lower() in self.AllSpecialWordsDictonary:
+                    self.AllSpecialWordsDictonary[word.lower()] += wordsRemoved
                 else:
-                    self.AllSpecialWordsDictonary[word] = wordsRemoved
+                    self.AllSpecialWordsDictonary[word.lower()] = wordsRemoved
 
             newTextWithWordRemoved = ''.join(splitText)
             newText=newTextWithWordRemoved
@@ -339,7 +323,7 @@ class TextProcessor:
                             else:
                                 self.YOEDictionaries[fileName][phrase][specialWord] = 1
 
-                            if specialWord in self.YOEAllPhraseDictonary:
+                            if specialWord in self.YOEAllPhraseDictonary[phrase]:
                                 self.YOEAllPhraseDictonary[phrase][specialWord] += 1
                             else:
                                 self.YOEAllPhraseDictonary[phrase][specialWord] = 1

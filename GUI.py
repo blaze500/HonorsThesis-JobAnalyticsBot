@@ -1,19 +1,4 @@
-import requests
-from bs4 import BeautifulSoup
-import time
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-import os
-import csv
 import LocationChecker
-import Webscraper_Linkedin
-import Webscraper_Handshake
-import Webscraper_Indeed
-import Webscraper_GetJobText
-import ProcessingText
-import Webscraper_GetStopwords
 import easygui as gui
 import Webscraper_JobFinder as JobFinder
 import sys
@@ -29,18 +14,16 @@ class GUI:
 
         importantMessage = "Before The Program Begins, Would You Like This Program To Gather Stopwords From Multiple Job Postings?\n\nThis Will Add At Least An Hour To Your Wait Time BUT Give More Refined Results For What Words They Are Looking For In Your Resume.\n\nThis Is Not Recommended If You Have Done This Recently, But IS Recommended If You Have Never Done This."
         self.stopwordCheck = gui.ynbox(importantMessage, title='Job Analytics Bot')
-        #DeleteFiles.DeleteJobFiles(self.stopwordCheck)
-
+        DeleteFiles.DeleteJobFiles(self.stopwordCheck)
         self.Questionare()
 
-        msg1 = "What words are you looking for in these jobs?\n\nThis will find all occurances of these words in order to see the number of years a job is looking for in this category and find the number of instances this word has been said in job postings\n\nPlease list words/phrases separated by commas. For example: software engineer, amazon web services, c+, ect. \n\nIt is important to note that this program is unable to find 2+ word phrases (in other words it can only find single words)"
+        msg1 = "What words are you looking for in these jobs?\n\nThis will find all occurances of these words in order to see the number of years a job is looking for in this category and find the number of instances this word has been said in job postings\n\nPlease list words/phrases separated by commas. For example: software engineer, amazon web services, c++, ect. \n\nIt is important to note that this program is unable to find 2+ word phrases (in other words it can only find single words)"
         self.specialWords = gui.enterbox(msg1, title='Job Analytics Bot')
         if self.specialWords is None:
             sys.exit()
         else:
-            self.specialWords.replace(', ', '\n')
             txtFile = open('SpecialWords.txt', 'a', encoding="utf-8")
-            txtFile.write(self.specialWords.replace(', ', '\n'))
+            txtFile.write(self.specialWords.lower().replace(', ', '\n'))
             txtFile.close()
 
         gui.msgbox("Please Do Not Close The Browser That Will Open Up After Reading This Message \nAt Any Point While Using The Program Or It Will Cause An Error!", title='Job Analytics Bot')
@@ -49,13 +32,14 @@ class GUI:
         self.DoProgram()
 
     def DoProgram(self):
+        """
         self.JobFinder.LoginToJobs()
         self.JobFinder.GetJobLinks()
         self.JobFinder.GetJobText()
 
-        if self.stopwordCheck == "Yes":
+        if self.stopwordCheck == "True" or self.stopwordCheck == True:
             self.JobFinder.GetStopWords()
-
+        """
         specialWordsAndDictonary=self.JobFinder.ProcessJobText()
 
         specialWordsText='Here are the results from the special words you looked for:\n\n'
@@ -86,16 +70,6 @@ class GUI:
                 textFile.write(wordsFound.replace(', ','\n'))
                 textFile.close()
                 gui.msgbox("The File Has Been Saved.\nThe Name Of The File Is ResumeWords.txt.", title='Job Analytics Bot')
-            else:
-                gui.msgbox("You Have Choosen Not To Save The File.", title='Job Analytics Bot')
-
-        savingJobs=gui.ynbox("Would You Like To Save The Jobs Found On _________?", title='Job Analytics Bot')
-        if savingWords:
-            gui.msgbox("Please Select The Location You Would Like To Save This At.", title='Job Analytics Bot')
-            #shutil.copy2 = gui.diropenbox()
-            if fileLocation is not None:
-                #shutil.copy2(,fileLocation)
-                gui.msgbox("The File Has Been Saved.\nThe Name Of The File Is ____________.", title='Job Analytics Bot')
             else:
                 gui.msgbox("You Have Choosen Not To Save The File.", title='Job Analytics Bot')
 
@@ -185,85 +159,5 @@ class GUI:
             self.experience.lower()
 
 
-
-"""
-    def Questionare(self):
-
-        msg1 = "What Field Of Work Are You Looking For?"
-        fow = ["Field Of Word"]
-        self.field = gui.multenterbox(msg1, title='Job Analytics Bot', fields=fow)
-        print(self.field)
-        if self.field is None:
-            return None
-        elif len(self.field) > 0:
-            self.field.lower()
-
-
-
-        msg2 = "Are You Looking For a Job or Internship?"
-        joi = ["Job", "Internship"]
-        self.type = gui.buttonbox(msg2, title='Job Analytics Bot', choices=joi)
-        if self.type is None:
-            return None
-        else:
-            self.type.lower()
-
-        while True:
-            msg3 = "What city do you want this job to be located at? \nIf you are not looking for a specific location leave these fields blank"
-            cos = ["City", "State"]
-            cityAndState = gui.multenterbox(msg3, title='Job Analytics Bot', fields=cos)
-            if cityAndState is None:
-                return None
-            if cityAndState[0] == "" and cityAndState[1] == '':
-                self.location = ""
-            elif LocationChecker.isCity(cityAndState[0]) and LocationChecker.isState(cityAndState[1]):
-                if LocationChecker.isLocation(cityAndState[0] + ","+ cityAndState[1]):
-                    self.location = cityAndState[0] + ","+ cityAndState[1]
-                    break
-                else:
-                    gui.msgbox("The City And State You Have Choosen Do Not Exist Together. \nPlease Try Again.")
-            else:
-                gui.msgbox("You Must Either Leave Both Fields Blank or Fill Them BOTH Out. \nPlease Try Again.")
-
-
-
-        msg4 = "Do You Want This Job To Be Remote, In Person, or Both?"
-        roip = ["Remote", "In Person", "Both"]
-        self.inPerson = gui.buttonbox(msg4, title='Job Analytics Bot', choices=roip).lower()
-        if self.inPerson is None:
-            return None
-        else:
-            self.inPerson.lower()
-
-        msg5 = "Do You Want This Job To Be Full Time, Part Time, Or Both?"
-        ftopt = ["Full Time", "Part Time", "Both"]
-        self.fullTime = gui.buttonbox(msg5, title='Job Analytics Bot', choices=ftopt).lower()
-        if self.fullTime is None:
-            return None
-        else:
-            self.fullTime.lower()
-
-
-        msg6 = "What Salary Are You Looking For? \nType In 0 If You Aren't Looking For A Specific Salary"
-        self.salary = gui.integerbox(msg6, title='Job Analytics Bot')
-        if self.salary is None:
-            return None
-
-        msg7 = "What Is The Highest Level Of College Education You Have?"
-        degree = ["Associate", "Bachelor", "Masters", "None"]
-        self.education = gui.buttonbox(msg7, title='Job Analytics Bot', choices=degree).lower()
-        if self.education is None:
-            return None
-        else:
-            self.education.lower()
-
-        msg8 = "What is your experience level?"
-        experience = ["Entry", "Mid", "Senior", "None"]
-        self.experience = gui.buttonbox(msg8, title='Job Analytics Bot', choices=experience).lower()
-        if self.experience is None:
-            return None
-        else:
-            self.experience.lower()
-"""
 
 GUI()

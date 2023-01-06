@@ -1,8 +1,5 @@
 import csv
 
-#https://stackoverflow.com/questions/17308872/check-whether-string-is-in-csv
-
-
 def isCity(city):
     if city[0].isalpha() is False or city[0] == ' ':
         return False

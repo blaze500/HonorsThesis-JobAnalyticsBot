@@ -1,12 +1,6 @@
-import requests
-from bs4 import BeautifulSoup
 import time
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-import os
-import csv
 import LocationChecker
 import Webscraper_Linkedin
 import Webscraper_Handshake
@@ -19,7 +13,7 @@ import sys
 
 class JobFinder:
 
-    #Starts the Program
+    #Starts the Program\
     def __init__(self, field, type, location, inPerson, fullTime, salary, experience, education):
         self.field = field
         self.type = type
@@ -31,7 +25,6 @@ class JobFinder:
         self.education = education
         self.seleniumDriver = webdriver.Chrome("chromedriver.exe")
         self.automate = False
-
 
     def LoginToJobs(self):
 
@@ -183,7 +176,7 @@ class JobFinder:
 
 
     def GetStopWords(self):
-        fields = ['Biology', 'Chinese', 'Computer Science', 'Dance', 'English', 'Film', 'Finance', 'Gender Studies', 'History', 'Journalism', 'Music', 'Philosophy', 'Psychology']
+        fields = ['Biology', 'Chinese', 'Chemistry', 'Dance', 'English', 'Film', 'Finance', 'Gender Studies', 'History', 'Journalism', 'Music', 'Philosophy', 'Psychology']
 
         StopWordGenerator = Webscraper_GetStopwords.StopWordGenerator(self.field, fields, 15, self.seleniumDriver)
         StopWordGenerator.GetJobLinksForStopWords()
@@ -201,6 +194,8 @@ class JobFinder:
         TextProcessor.YearsOfExperienceScentenceGenerator()
 
         TextProcessor.ProcessYearsOfExperienceText()
+
+        print(TextProcessor.ReturnYOEAllPhraseDictonary())
 
         TextProcessor.SpecialWordCounterAlgorithm()
 
@@ -295,121 +290,3 @@ class JobFinder:
         else:
             self.experience.lower()
 
-"""
-    def Questionare(self):
-
-        print("Are You Looking For a Job or Internship?")
-        while True:
-            self.type = input("Your Answer:").lower()
-            if self.type == "job" or self.type == "internship":
-                break
-            else:
-                print("The Answer You Put In Was Wrong. Please Try Again.")
-        print("")
-
-        print("What Field Are You Looking For?")
-        self.field = input("Your Answer:").lower()
-        print("")
-
-        print("Do You Want This Remote, In Person, or Both?")
-        while True:
-            self.inPerson = input("Your Answer:").lower()
-            if self.inPerson == "in person" or self.inPerson == "remote" or self.inPerson == "both":
-                break
-            else:
-                print("The Answer You Put In Was Wrong. Please Try Again.")
-        print("")
-
-        print("Do You Want This Full Time or Part Time? (if you want both, just type in both)")
-        while True:
-            self.fullTime = input("Your Answer:").lower()
-            if self.fullTime == "full time" or self.fullTime == "part time" or self.fullTime == "both":
-                break
-            else:
-                print("The Answer You Put In Was Wrong. Please Try Again.")
-        print("")
-
-        print("What Salary Are You Looking For?")
-        print("Note: this will look for the number you type in or higher")
-        print("so if you are looking for any salary, type in 0")
-        self.salary = int(input("Your Answer:"))
-        print("")
-
-        while True:
-            print(
-                "What city do you want this job to be located at? (If you are not looking for a specific city, hit enter)")
-            print("PLEASE NOTE: The starting letter of each word MUST be capitalized")
-            while True:
-                city = input("Your Answer:")
-                if city == "" or LocationChecker.isCity(city):
-                    self.location = city
-                    break
-                print("The city you were looking for isnt there")
-            print("")
-
-            print("What state do you want this job to be located at? (If you are not looking for a specific state, hit enter)")
-            print("PLEASE NOTE: The starting letter of each word MUST be capitalized")
-            while True:
-                state = input("Your Answer:")
-                if state == "" and self.location == "":
-                    break
-                elif len(state) > 0 and self.location == "":
-                    print("You must leave this blank or restart the program as you have no city.")
-                elif LocationChecker.isState(state):
-                    if LocationChecker.isLocation(self.location + ",state"):
-                        self.location += ","
-                        self.location += state
-                        break
-                    else:
-                        print("The City and State you choose do note exist together. Please pick another pair of a City and a State.")
-                else:
-                    print("The State you were looking for isnt there")
-            print(self.location)
-            print("")
-
-            if self.location == "" or "," not in self.location or LocationChecker.isLocation(self.location):
-                break
-            else:
-                print("The city and state you have selected is not a location in the United States")
-                print("You will have to enter a new city and state")
-                self.location = ""
-
-        print("What is the highest level of Education you have? (Associate, Bachelor, Masters, or hit enter)")
-        while True:
-            self.education = input("Your Answer:").lower()
-            if self.education == "associate" or self.education == "bachelor" or self.education == "masters" or self.experience == "":
-                break
-            else:
-                print("The Answer You Put In Was Wrong. Please Try Again")
-        print("")
-
-        print("What is your experience level? (Entry, Mid, Senior, or just hit enter)")
-        while True:
-            self.experience = input("Your Answer:").lower()
-            if self.experience == "entry" or self.experience == "mid" or self.experience == "senior" or self.experience == "":
-                break
-            else:
-                print("The Answer You Put In Was Wrong. Please Try Again")
-        print("")
-
-        '''
-        print("What Is The Name Of The CSV File You Would Like This Written To?")
-        self.writeTo = input("Your Answer:")
-        print("")
-        '''
-
-    def readFile(self, fileName):
-        file = open(fileName + ".txt", "r")
-        fileLines = file.readlines()
-        self.type = fileLines[0].strip()
-        self.field = fileLines[1].strip()
-        self.inPerson = fileLines[2].strip()
-        self.fullTime = fileLines[3].strip()
-        self.salary = fileLines[4].strip()
-        self.location = fileLines[5].strip()
-        self.education = fileLines[6].strip()
-        self.experience = fileLines[7].strip()
-        #self.writeTo = fileLines[8].strip()
-        file.close()
-        return self
-"""

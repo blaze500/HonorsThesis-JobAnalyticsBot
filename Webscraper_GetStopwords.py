@@ -1,12 +1,4 @@
-import requests
-from bs4 import BeautifulSoup
-import time
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium import webdriver
-from selenium.webdriver.common.by import By
 import os
-import LocationChecker
 import Webscraper_Linkedin
 import Webscraper_Handshake
 import Webscraper_Indeed
@@ -25,7 +17,7 @@ class StopWordGenerator:
             self.fields.remove(field)
         self.inPerson = 'both'
         self.fullTime = 'full time'
-        self.salary = '0'
+        self.salary = 0
         self.location = ''
         self.education = 'bachelor'
         self.experience = 'entry'
@@ -96,18 +88,6 @@ class StopWordGenerator:
         getJobText.getHandshakeJobText('HandshakeJobsStopWords')
         getJobText.getIndeedJobText('IndeedJobsStopWords')
         getJobText.getLinkedinJobText('LinkedinJobsStopWords')
-        '''
-        for field in self.fields:
-
-            getJobText.getHandshakeJobText('HandshakeJobs' + field.replace(' ', ''))
-            os.remove('HandshakeJobs' + field.replace(' ', '') + ".csv")
-
-            getJobText.getIndeedJobText('IndeedJobs' + field.replace(' ', ''))
-            os.remove('IndeedJobs' + field.replace(' ', '') + ".csv")
-
-            getJobText.getLinkedinJobText('LinkedinJobs' + field.replace(' ', ''))
-            os.remove('LinkedinJobs' + field.replace(' ', '') + ".csv")
-        '''
 
 
 
