@@ -3,6 +3,8 @@ import easygui as gui
 import Webscraper_JobFinder as JobFinder
 import sys
 import DeleteFiles
+import matplotlib.pyplot as plt
+from wordcloud import WordCloud
 
 class GUI:
 
@@ -17,7 +19,7 @@ class GUI:
         DeleteFiles.DeleteJobFiles(self.stopwordCheck)
         self.Questionare()
 
-        msg1 = "What words are you looking for in these jobs?\n\nThis will find all occurances of these words in order to see the number of years a job is looking for in this category and find the number of instances this word has been said in job postings\n\nPlease list words/phrases separated by commas. For example: software engineer, amazon web services, c++, ect. \n\nIt is important to note that this program is unable to find 2+ word phrases (in other words it can only find single words)"
+        msg1 = "What words and phrases are you looking for in these jobs?\n\nThis will find all occurances of these words and phrases in order to see the number of years a job is looking for in this category and find the number of instances this word has been said in job postings\n\nPlease list words/phrases separated by commas. For example: software engineer, amazon web services, c++, etc. \n\nIt is important to note that this program is unable to find 2+ word phrases or words with special characters unless they are typed here"
         self.specialWords = gui.enterbox(msg1, title='Job Analytics Bot')
         if self.specialWords is None:
             sys.exit()
@@ -32,14 +34,14 @@ class GUI:
         self.DoProgram()
 
     def DoProgram(self):
-        """
+
         self.JobFinder.LoginToJobs()
         self.JobFinder.GetJobLinks()
         self.JobFinder.GetJobText()
 
         if self.stopwordCheck == "True" or self.stopwordCheck == True:
             self.JobFinder.GetStopWords()
-        """
+
         specialWordsAndDictonary=self.JobFinder.ProcessJobText()
 
         specialWordsText='Here are the results from the special words you looked for:\n\n'
@@ -55,6 +57,17 @@ class GUI:
                 YOEText += '\t'+ word + '(This was found ' + str(num) + ' times)\n'
             YOEText += '\n'
         gui.msgbox(YOEText,  title='Job Analytics Bot')
+
+        wordcloud = WordCloud(min_word_length=3,
+                              background_color='white')
+
+        # generate the word cloud
+        wordcloud.generate_from_frequencies(specialWordsAndDictonary[2])
+
+        # plot
+        plt.imshow(wordcloud, interpolation='bilinear')
+        plt.axis('off')
+        plt.show()
 
         wordsFound=''
         for key in specialWordsAndDictonary[2].keys():
